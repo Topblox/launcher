@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Custom Startpage</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+    /* Apply a full-screen background image */
+    body {
+        font-family: 'Roboto', sans-serif;
+        background-image: url('backgrounds/4.jpg');
+        background-size: cover;
+        background-position: center;
+        background-attachment: fixed;
+        color: white;
+        margin: 0;
+        padding: 20px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        height: 100vh;
+        overflow: hidden;
+    }
+
+    h1 {
+        margin: 0;
+        font-size: 98px;
+        text-align: center;
+    }
+
+    /* Search Bar styles */
+    .search-bar {
+        width: 100%;
+        max-width: 500px; /* Limit the search bar width */
+        margin-top: 20px;
+    }
+
+    .search-bar input {
+        width: 100%;
+        padding: 15px;
+        border: 2px solid #fff;
+        border-radius: 30px; /* Rounded corners */
+        background-color: rgba(0, 0, 0, 0.5); /* Transparent black background */
+        color: white;
+        font-size: 18px;
+        outline: none;
+        transition: all 0.3s ease;
+    }
+
+    .search-bar input::placeholder {
+        color: #ccc;
+    }
+
+    .search-bar input:focus {
+        border-color: #a762d4; /* Green border on focus */
+        background-color: rgba(0, 0, 0, 0.7); /* Darker background on focus */
+    }
+
+    .button-container {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 20px;
+        margin-top: 30px;
+    }
+
+    .button {
+        background-color: rgba(51, 51, 51, 0.7);
+        border: none;
+        color: white;
+        padding: 10px 20px;
+        display: flex;
+        align-items: center;
+        justify-content: flex-start;
+        border-radius: 8px;
+        width: 250px;
+        text-align: left;
+        text-decoration: none;
+        transition: transform 0.1s ease, opacity 0.2s ease;
+        flex-shrink: 0;
+        max-height: 150px; /* Restrict button height */
+        overflow: hidden; /* Prevent overflow */
+    }
+
+    .button:hover {
+        transform: scale(1.02); /* Slight zoom effect on hover */
+        opacity: 1; /* Full opacity on hover */
+    }
+
+    .logo {
+        width: 40px;
+        height: 40px;
+        margin-right: 15px;
+    }
+
+    .button-content {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        overflow: hidden; /* Prevent content from overflowing */
+        text-overflow: ellipsis;
+        max-height: 120px; /* Limit the height of the content area */
+        white-space: nowrap; /* Prevent text wrapping */
+    }
+
+    .button-content h3 {
+        margin: 0;
+        font-size: 18px;
+    }
+
+    .button-content p {
+        margin: 5px 0 0;
+        font-size: 14px;
+        color: #bbb;
+        white-space: nowrap; /* Prevent wrapping */
+        overflow: hidden;    /* Hide overflow */
+        text-overflow: ellipsis; /* Add ellipsis for overflow text */
+    }
+
+    </style>
+</head>
+<body>
+    <h1 id="clock"></h1> <!-- Empty h1 element for the clock -->
+
+    <!-- Welcome text -->
+    <p id="welcome-text">Welcome!</p>
+
+    <!-- Search Bar below Welcome text -->
+    <div class="search-bar" id="search-bar">
+        <input type="text" id="search-input" placeholder="Search Google..." />
+    </div>
+
+    <div class="button-container" id="button-container"></div>
+
+    <script>
+        // Function to update the clock every minute (no seconds and no AM/PM)
+        function updateClock() {
+            const clockElement = document.getElementById('clock');
+            const now = new Date();
+
+            let hours = now.getHours();
+            let minutes = now.getMinutes();
+
+            // Convert 24-hour format to 12-hour format
+            if (hours > 12) {
+                hours -= 12; // Convert to 12-hour format
+            } else if (hours === 0) {
+                hours = 12; // Midnight is 12
+            }
+
+            // Add leading zero to minutes if less than 10
+            minutes = minutes < 10 ? '0' + minutes : minutes;
+
+            // Set the clock in HH:MM format (12-hour without AM/PM)
+            clockElement.textContent = `${hours}:${minutes}`;
+        }
+
+        // Update the clock every 60,000 milliseconds (1 minute)
+        setInterval(updateClock, 60000);
+
+        // Initial clock update
+        updateClock();
+
+        // Function to calculate and set the greeting based on time of day
+        function updateGreeting() {
+            const welcomeTextElement = document.getElementById('welcome-text');
+            const now = new Date();
+            const hours = now.getHours();
+            let greeting;
+
+            if (hours >= 5 && hours < 12) {
+                greeting = "Good Morning";
+            } else if (hours >= 12 && hours < 17) {
+                greeting = "Good Afternoon";
+            } else if (hours >= 17 && hours < 21) {
+                greeting = "Good Evening";
+            } else {
+                greeting = "Good Night";
+            }
+
+            welcomeTextElement.textContent = `${greeting}!`;
+        }
+
+        // Initial greeting update
+        updateGreeting();
+
+        // Function to parse the layout.cfg file and determine if search bar should be displayed
+        fetch('layout.cfg')
+            .then(response => response.text())
+            .then(data => {
+                const lines = data.split('\n');
+                const showSearchBarLine = lines[0].trim(); // Get the first line of the file
+                const searchBarElement = document.getElementById('search-bar');
+                
+                // Check if the line contains 'show_search_bar = "False"'
+                if (showSearchBarLine.includes('show_search_bar = "False"')) {
+                    searchBarElement.style.display = 'none'; // Hide the search bar
+                } else {
+                    searchBarElement.style.display = 'flex'; // Ensure the search bar is visible
+                }
+            })
+            .catch(error => {
+                console.error('Error loading layout.cfg:', error);
+            });
+
+        // Function to parse the buttons.cfg file and generate buttons
+        fetch('buttons.cfg')
+            .then(response => response.text())
+            .then(data => {
+                const container = document.getElementById('button-container');
+                const lines = data.split('\n');
+                
+                lines.forEach(line => {
+                    // Skip lines that start with # (comments)
+                    if (line.trim().startsWith("#") || line.trim() === "") {
+                        return; // Skip this line
+                    }
+                    
+                    const [title, url, favicon] = line.split('|'); // Split each line by "|"
+                    
+                    if (title && url) {
+                        const button = document.createElement('a');
+                        button.className = 'button';
+                        button.href = url;
+                        button.target = '_blank';
+                        
+                        // If no favicon is provided, attempt to fetch it from FaviconExtractor
+                        let faviconUrl = favicon ? favicon : `https://www.faviconextractor.com/favicon/${url.replace('https://', '').replace('http://', '')}?larger=true`;                        
+                        // Create the logo image and handle fallback
+                        const logo = document.createElement('img');
+                        logo.src = faviconUrl;
+                        logo.alt = title + ' logo';
+                        logo.className = 'logo';
+
+                        // Handle if favicon is unreachable
+                        logo.onerror = function() {
+                            this.src = '/icons/favicon_error.png'; // Fallback image if favicon is not found
+                        };
+
+                        // Create the text content for the button
+                        const buttonContent = document.createElement('div');
+                        buttonContent.className = 'button-content';
+                        const titleElement = document.createElement('h3');
+                        titleElement.textContent = title;
+                        const urlText = document.createElement('p');
+                        urlText.textContent = url;
+                        
+                        // Append logo and text to button content
+                        buttonContent.appendChild(titleElement);
+                        buttonContent.appendChild(urlText);
+                        
+                        // Append logo and button content to the button
+                        button.appendChild(logo);
+                        button.appendChild(buttonContent);
+                        
+                        // Append the button to the container
+                        container.appendChild(button);
+                    }
+                });
+            })
+            .catch(error => {
+                console.error('Error loading buttons.cfg:', error);
+            });
+
+        // Add event listener to search input
+        const searchInput = document.getElementById('search-input');
+        searchInput.addEventListener('keydown', function(event) {
+            if (event.key === 'Enter') {
+                const query = searchInput.value;
+                if (query) {
+                    // Open Google search results for the query in a new tab
+                    window.open(`https://www.google.com/search?q=${encodeURIComponent(query)}`, '_blank');
+                }
+            }
+        });
+    </script>    
+</body>
+</html>
