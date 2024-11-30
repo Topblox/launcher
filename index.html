@@ -216,7 +216,7 @@
                         logo.onerror = function() {
                             const primaryDomain = url.replace(/https?:\/\//, '').split('/')[0];
                             this.onerror = function() {
-                                this.src = '/icons/favicon_error.png'; // Final fallback
+                                this.src = 'https://topblox.github.io/launcher/icons/favicon_error.png'; // Final fallback
                             };
                             this.src = `https://www.faviconextractor.com/favicon/${primaryDomain}?larger=true`;
                         };
