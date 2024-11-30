@@ -185,25 +185,6 @@
         // Initial greeting update
         updateGreeting();
 
-        // Function to parse the layout.cfg file and determine if search bar should be displayed
-        fetch('layout.cfg')
-            .then(response => response.text())
-            .then(data => {
-                const lines = data.split('\n');
-                const showSearchBarLine = lines[0].trim(); // Get the first line of the file
-                const searchBarElement = document.getElementById('search-bar');
-                
-                // Check if the line contains 'show_search_bar = "False"'
-                if (showSearchBarLine.includes('show_search_bar = "False"')) {
-                    searchBarElement.style.display = 'none'; // Hide the search bar
-                } else {
-                    searchBarElement.style.display = 'flex'; // Ensure the search bar is visible
-                }
-            })
-            .catch(error => {
-                console.error('Error loading layout.cfg:', error);
-            });
-
         // Function to parse the buttons.cfg file and generate buttons
         fetch('buttons.cfg')
             .then(response => response.text())
@@ -225,36 +206,34 @@
                         button.href = url;
                         button.target = '_blank';
                         
-                        // If no favicon is provided, attempt to fetch it from FaviconExtractor
-                        let faviconUrl = favicon ? favicon : `https://www.faviconextractor.com/favicon/${url.replace('https://', '').replace('http://', '')}?larger=true`;                        
-                        // Create the logo image and handle fallback
+                        // Attempt to fetch favicon
                         const logo = document.createElement('img');
-                        logo.src = faviconUrl;
+                        logo.src = favicon ? favicon : `https://www.faviconextractor.com/favicon/${url.replace(/https?:\/\//, '').split('/')[0]}?larger=true`;
                         logo.alt = title + ' logo';
                         logo.className = 'logo';
 
-                        // Handle if favicon is unreachable
+                        // Handle fallback if favicon is unreachable
                         logo.onerror = function() {
-                            this.src = '/icons/favicon_error.png'; // Fallback image if favicon is not found
+                            const primaryDomain = url.replace(/https?:\/\//, '').split('/')[0];
+                            this.onerror = function() {
+                                this.src = '/icons/favicon_error.png'; // Final fallback
+                            };
+                            this.src = `https://www.faviconextractor.com/favicon/${primaryDomain}?larger=true`;
                         };
 
-                        // Create the text content for the button
+                        // Create button content
                         const buttonContent = document.createElement('div');
                         buttonContent.className = 'button-content';
                         const titleElement = document.createElement('h3');
                         titleElement.textContent = title;
                         const urlText = document.createElement('p');
                         urlText.textContent = url;
-                        
-                        // Append logo and text to button content
+
+                        // Append content to button
                         buttonContent.appendChild(titleElement);
                         buttonContent.appendChild(urlText);
-                        
-                        // Append logo and button content to the button
                         button.appendChild(logo);
                         button.appendChild(buttonContent);
-                        
-                        // Append the button to the container
                         container.appendChild(button);
                     }
                 });
@@ -269,7 +248,6 @@
             if (event.key === 'Enter') {
                 const query = searchInput.value;
                 if (query) {
-                    // Open Google search results for the query in a new tab
                     window.open(`https://www.google.com/search?q=${encodeURIComponent(query)}`, '_blank');
                 }
             }
